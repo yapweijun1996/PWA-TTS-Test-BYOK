@@ -36,6 +36,7 @@
       const offlineNoticeEl = document.getElementById("offlineNotice");
       const pwaStatusNoticeEl = document.getElementById("pwaStatusNotice");
       const updateNoticeEl = document.getElementById("updateNotice");
+      const updateTitleEl = document.getElementById("updateTitle");
       const updateButtonEl = document.getElementById("updateButton");
       const installNoticeEl = document.getElementById("installNotice");
       const installButtonEl = document.getElementById("installButton");
@@ -492,13 +493,56 @@
 
       function setInstallNoticeVisible(visible) {
         installNoticeEl.hidden = !visible;
-        scrollTopButtonEl.classList.toggle("above-install-notice", visible);
+      }
+
+      function requestWorkerVersion(worker) {
+        return new Promise((resolve) => {
+          if (typeof MessageChannel === "undefined") {
+            resolve(null);
+            return;
+          }
+
+          const channel = new MessageChannel();
+          let settled = false;
+          const finish = (version) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timeoutId);
+            channel.port1.close();
+            resolve(version);
+          };
+          const timeoutId = window.setTimeout(() => finish(null), 1500);
+
+          channel.port1.onmessage = ({ data }) => {
+            const version = data?.type === "VERSION" ? data.version : null;
+            finish(typeof version === "string" && /^[a-zA-Z0-9._-]{1,32}$/.test(version) ? version : null);
+          };
+
+          try {
+            worker.postMessage({ type: "GET_VERSION" }, [channel.port2]);
+          } catch {
+            finish(null);
+          }
+        });
+      }
+
+      async function showAvailableUpdate(registration) {
+        const waitingWorker = registration.waiting;
+        if (!waitingWorker || !navigator.serviceWorker.controller) return;
+
+        updateNoticeEl.hidden = false;
+        const version = await requestWorkerVersion(waitingWorker);
+        if (registration.waiting !== waitingWorker || updateNoticeEl.hidden) return;
+
+        const displayVersion = version || updateNoticeEl.dataset.version;
+        if (!displayVersion) return;
+
+        updateTitleEl.textContent = `Update available: ${displayVersion}`;
+        updateButtonEl.textContent = `Update to ${displayVersion}`;
       }
 
       function checkForWaitingUpdate(registration) {
-        if (registration.waiting && navigator.serviceWorker.controller) {
-          updateNoticeEl.hidden = false;
-        }
+        void showAvailableUpdate(registration);
       }
 
       function watchForWorkerUpdate(registration) {
@@ -522,7 +566,7 @@
               navigator.serviceWorker.controller &&
               registration.waiting
             ) {
-              updateNoticeEl.hidden = false;
+              void showAvailableUpdate(registration);
               showPwaStatus("");
             }
           };

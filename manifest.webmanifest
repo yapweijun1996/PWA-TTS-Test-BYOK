@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Simple TTS — OpenRouter BYOK",
   "short_name": "Simple TTS",
-  "description": "Generate speech with Gemini 3.8 Flash Lite TTS using your own OpenRouter API key.",
+  "description": "Generate speech with a user-selected text-to-speech model using your own OpenRouter API key.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,7 +1,7 @@
 "use strict";
 
 const CACHE_PREFIX = "simple-tts-shell-";
-const CACHE_VERSION = "v10";
+const CACHE_VERSION = "v12";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const APP_SHELL = [
   "./",
@@ -45,6 +45,11 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
+  if (event.data?.type === "GET_VERSION") {
+    event.ports?.[0]?.postMessage({ type: "VERSION", version: CACHE_VERSION });
+    return;
+  }
+
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
   }

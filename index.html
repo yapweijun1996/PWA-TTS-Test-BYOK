@@ -32,11 +32,20 @@
 
 <body>
   <main class="page">
-    <header class="brand">
-      <div class="logo" aria-hidden="true">T</div>
-      <div class="brand-copy">
-        <h1>Simple TTS</h1>
-        <p>OpenRouter BYOK · choose your TTS model</p>
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">T</div>
+        <div class="brand-copy">
+          <h1>Simple TTS</h1>
+          <p>OpenRouter BYOK · choose your TTS model</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div id="installNotice" class="app-notice install-notice" role="region" aria-label="Install app" aria-live="polite" hidden>
+          <span>Install for a standalone app experience.</span>
+          <button id="installButton" class="button secondary" type="button">Install app</button>
+        </div>
       </div>
     </header>
 
@@ -46,160 +55,177 @@
 
     <div id="pwaStatusNotice" class="app-notice pwa-status-notice" role="status" aria-live="polite" hidden></div>
 
-    <div id="updateNotice" class="app-notice update-notice" role="region" aria-label="App update" aria-live="polite" hidden>
+    <div id="updateNotice" class="app-notice update-notice" data-version="v12" role="region" aria-label="App update" aria-live="polite" hidden>
       <div>
-        <strong>Update available</strong>
+        <strong id="updateTitle">Update available: v12</strong>
         <span>A newer version is ready. Updating reloads the app; unsaved inputs will be lost.</span>
       </div>
-      <button id="updateButton" class="button secondary" type="button">Update now</button>
+      <button id="updateButton" class="button secondary" type="button">Update to v12</button>
     </div>
 
-    <div id="installNotice" class="app-notice install-notice" role="region" aria-label="Install app" aria-live="polite" hidden>
-      <span>Install Simple TTS for a standalone app experience.</span>
-      <button id="installButton" class="button secondary" type="button">Install app</button>
-    </div>
-
-    <div class="card">
-      <section class="section">
-        <div class="section-title">
-          <h2>Connection</h2>
-          <span class="chip">BYOK · client-side</span>
-        </div>
-
-        <div class="grid">
-          <div class="field field-full-width">
-            <label for="model">OpenRouter TTS model ID</label>
-            <input
-              id="model"
-              class="control"
-              type="text"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              placeholder="provider/model-name"
-              aria-describedby="modelHint"
-            />
-            <div id="modelHint" class="hint">
-              Use a model supported by OpenRouter's speech endpoint and PCM output. The model's voice requirements may vary.
+    <div class="workspace-grid">
+      <section class="card speech-panel" aria-labelledby="speechHeading">
+        <div class="section">
+          <div class="section-title panel-heading">
+            <div class="panel-heading-copy">
+              <h2 id="speechHeading">Text to Speech</h2>
+              <p>Enter the text you want to hear. Long text is split into separate requests.</p>
             </div>
+            <span class="chip">PCM → WAV</span>
           </div>
 
           <div class="field">
-            <label for="apiKey">OpenRouter API Key</label>
-            <div class="key-wrap">
+            <label for="text">Text to speak</label>
+            <textarea
+              id="text"
+              class="textarea"
+              placeholder="Type something to generate speech..."
+            >Hello! This is a text-to-speech test through OpenRouter.</textarea>
+
+            <div class="textarea-meta">
+              <span class="hint">Tip: Ctrl/Cmd + Enter to generate.</span>
+              <span id="counter" class="counter">0 words · 0 characters</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="clearBtn" class="button secondary" type="button">Clear</button>
+            <button id="generateBtn" class="button primary" type="button">Generate Speech</button>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="card settings-panel" aria-labelledby="settingsHeading">
+        <div class="section">
+          <div class="section-title panel-heading">
+            <div class="panel-heading-copy">
+              <h2 id="settingsHeading">Model &amp; API</h2>
+              <p>Choose a compatible model and configure access.</p>
+            </div>
+            <span class="chip">Client-side</span>
+          </div>
+
+          <div class="grid settings-grid">
+            <div class="field field-full-width">
+              <label for="model">OpenRouter TTS model ID</label>
               <input
-                id="apiKey"
+                id="model"
                 class="control"
-                type="password"
-                inputmode="text"
+                type="text"
                 autocomplete="off"
+                autocapitalize="off"
                 spellcheck="false"
-                placeholder="sk-or-v1-..."
-                aria-describedby="keyHint"
+                placeholder="provider/model-name"
+                aria-describedby="modelHint"
               />
-              <button id="toggleKey" class="icon-button" type="button" aria-label="Show API key">
-                Show
-              </button>
+              <div id="modelHint" class="hint">
+                Must support OpenRouter's speech endpoint and PCM output.
+              </div>
             </div>
-            <div id="keyHint" class="hint">
-              The key is sent to OpenRouter only when generating speech.
+
+            <div class="field">
+              <label for="apiKey">OpenRouter API Key</label>
+              <div class="key-wrap">
+                <input
+                  id="apiKey"
+                  class="control"
+                  type="password"
+                  inputmode="text"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="sk-or-v1-..."
+                  aria-describedby="keyHint"
+                />
+                <button id="toggleKey" class="icon-button" type="button" aria-label="Show API key">
+                  Show
+                </button>
+              </div>
+              <div id="keyHint" class="hint">
+                The key is sent to OpenRouter only when generating speech.
+              </div>
+              <div class="remember-row">
+                <input id="rememberSettings" type="checkbox" />
+                <label for="rememberSettings">Remember settings on this device, including the API key</label>
+              </div>
+              <div class="settings-actions">
+                <button id="forgetSettings" class="button secondary" type="button" disabled>Forget saved settings</button>
+                <span id="settingsStatus" class="hint" role="status" aria-live="polite"></span>
+              </div>
+              <div class="hint storage-warning">
+                Saved settings are unencrypted; avoid shared or untrusted devices.
+              </div>
             </div>
-            <div class="remember-row">
-              <input id="rememberSettings" type="checkbox" />
-              <label for="rememberSettings">Remember settings on this device, including the API key</label>
+
+            <div class="field">
+              <label for="voice">Voice (if required by your model)</label>
+              <input
+                id="voice"
+                class="control"
+                type="text"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="Model-specific voice name"
+              />
+              <div class="hint">Leave blank only if the selected model uses a default voice.</div>
             </div>
-            <div class="settings-actions">
-              <button id="forgetSettings" class="button secondary" type="button" disabled>Forget saved settings</button>
-              <span id="settingsStatus" class="hint" role="status" aria-live="polite"></span>
-            </div>
-            <div class="hint storage-warning">
-              IndexedDB is not encrypted. Forgetting deletes this local copy, not the OpenRouter key. Avoid shared devices.
-            </div>
+
+            <details class="advanced-settings field-full-width">
+              <summary>
+                <span>
+                  <strong>Long-text settings</strong>
+                  <span>Request size and segmentation</span>
+                </span>
+                <span class="disclosure-icon" aria-hidden="true">⌄</span>
+              </summary>
+              <div class="advanced-body">
+                <div class="field">
+                  <label for="chunkSize">Maximum characters per request</label>
+                  <input
+                    id="chunkSize"
+                    class="control chunk-size-control"
+                    type="number"
+                    min="1000"
+                    max="8000"
+                    step="500"
+                    value="4000"
+                    inputmode="numeric"
+                    aria-describedby="chunkSizeHint"
+                  />
+                  <div id="chunkSizeHint" class="hint">
+                    Text is split at paragraph or sentence boundaries. Segments are separate requests with no shared context, and each may be billed separately. This is a character target, not a token limit.
+                  </div>
+                </div>
+              </div>
+            </details>
           </div>
-
-          <div class="field">
-            <label for="voice">Voice (if required by your model)</label>
-            <input
-              id="voice"
-              class="control"
-              type="text"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              placeholder="Model-specific voice name"
-            />
-            <div class="hint">Leave blank only if the selected model uses a default voice.</div>
-          </div>
-
-          <div class="field field-full-width">
-            <label for="chunkSize">Maximum characters per request</label>
-            <input
-              id="chunkSize"
-              class="control chunk-size-control"
-              type="number"
-              min="1000"
-              max="8000"
-              step="500"
-              value="4000"
-              inputmode="numeric"
-              aria-describedby="chunkSizeHint"
-            />
-            <div id="chunkSizeHint" class="hint">
-              Longer text is split at paragraph or sentence boundaries and synthesized sequentially. Each segment is a separate request; context is not carried across segments. This is a character target, not a token limit.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-title">
-          <h2>Speech</h2>
-          <span class="chip">PCM → WAV</span>
-        </div>
-
-        <div class="field">
-          <label for="text">Text to speak</label>
-          <textarea
-            id="text"
-            class="textarea"
-            placeholder="Type something to generate speech..."
-          >Hello! This is a text-to-speech test through OpenRouter.</textarea>
-
-          <div class="textarea-meta">
-            <span class="hint">Tip: Ctrl/Cmd + Enter to generate.</span>
-            <span id="counter" class="counter">0 words · 0 characters</span>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="clearBtn" class="button secondary" type="button">Clear</button>
-          <button id="generateBtn" class="button primary" type="button">
-            Generate Speech
-          </button>
-        </div>
-
-        <div id="status" class="status" role="status" aria-live="polite"></div>
-      </section>
-
-      <section id="result" class="section result">
-        <div class="section-title">
-          <h2>Audio</h2>
-          <span id="resultBadge" class="chip">Ready</span>
-        </div>
-
-        <audio id="audio" controls preload="metadata"></audio>
-
-        <div class="result-meta">
-          <div class="meta-copy">
-            <div><strong>Voice:</strong> <span id="resultVoice">—</span></div>
-            <div><strong>File:</strong> <span id="resultFile">—</span></div>
-            <div><strong>Generation ID:</strong> <span id="generationId">—</span></div>
-          </div>
-
-          <a id="download" class="download" href="#" download>Download Audio</a>
         </div>
       </section>
     </div>
+
+    <section id="result" class="card section result" aria-labelledby="resultHeading">
+      <div class="section-title panel-heading">
+        <div class="panel-heading-copy">
+          <h2 id="resultHeading">Generated Audio</h2>
+          <p>Listen to the result or download the audio file.</p>
+        </div>
+        <span id="resultBadge" class="chip">Ready</span>
+      </div>
+
+      <audio id="audio" controls preload="metadata"></audio>
+
+      <div class="result-meta">
+        <div class="meta-copy">
+          <div><strong>Voice:</strong> <span id="resultVoice">—</span></div>
+          <div><strong>File:</strong> <span id="resultFile">—</span></div>
+          <div><strong>Generation ID:</strong> <span id="generationId">—</span></div>
+        </div>
+
+        <a id="download" class="download" href="#" download>Download Audio</a>
+      </div>
+    </section>
 
     <p class="footer-note">
       Your OpenRouter key is sent only to OpenRouter when you generate speech.

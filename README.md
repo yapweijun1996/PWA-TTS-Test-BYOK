@@ -13,17 +13,17 @@ A small static text-to-speech app for user-selected TTS models through the OpenR
 - Uses a restrictive same-origin CSP for the static assets.
 - Installs as a standalone PWA with home-screen icons.
 - Caches only the application shell for offline launch; OpenRouter generation remains online-only.
-- Shows a user-controlled update prompt and a loader before activating a waiting Service Worker.
+- Shows a user-controlled update button labeled with the waiting app version and a loader before activating a waiting Service Worker.
 
 ## PWA behavior
 
 The Web App Manifest defines the app identity, standalone display mode, scope, colors, and icons. Serve this app over HTTPS in production; `localhost` is also a secure context for local development.
 
-The versioned Service Worker caches the static app shell only. It does not cache API requests, generated audio, or IndexedDB settings. When offline, the cached interface remains available and the app clearly says speech generation needs an internet connection.
+The versioned Service Worker caches the static app shell only. It does not cache API requests, generated audio, or IndexedDB settings. When the browser reports offline, the cached interface remains available and the app says speech generation needs an internet connection. Browser connectivity indicators are advisory; generation still requires a working internet connection.
 
-When a newer Service Worker is waiting, the app offers **Update now**. The current version stays active until the user chooses the update; then a loader is shown, the waiting worker activates, and the page reloads into the new version. The first install activates automatically because there is no existing app version to interrupt.
+When a newer Service Worker is waiting, the app asks it for its release identifier and labels the action **Update to v12** (using the HTML version label as a fallback). The current version stays active until the user chooses the update; then a loader is shown, the waiting worker activates, and the page reloads into the new version. The first install activates automatically because there is no existing app version to interrupt.
 
-For every release that changes the app shell, increment `CACHE_VERSION` in `service-worker.js`. This changes the worker bytes and cache name, precaches the new shell, and removes the previous app-shell cache after activation. Ensure the host does not indefinitely serve stale `index.html` or `service-worker.js` files. The service worker is registered relative to its own directory, so it can be hosted at a repository subpath.
+For every release that changes the app shell, increment `CACHE_VERSION` in `service-worker.js` and synchronize `data-version`, the update heading, and the button label in `index.html`. The release identifier is also the visible update version (for example, `v12`); it is a cache/release identifier, not a semantic-versioning claim. This changes the worker bytes and cache name, precaches the new shell, and removes the previous app-shell cache after activation. Ensure the host does not indefinitely serve stale `index.html` or `service-worker.js` files. The service worker is registered relative to its own directory, so it can be hosted at a repository subpath.
 
 On browsers that support `beforeinstallprompt`, the app exposes an install button. On iPhone or iPad, open the page in Safari and choose **Share → Add to Home Screen**. Settings are not retained between sessions unless the user explicitly enables IndexedDB saving.
 
@@ -76,7 +76,7 @@ The app treats each generated segment as an independent TTS request; the model d
 
 For example, 3,000 English words often become roughly 4–6 requests at the default size, depending on spacing and punctuation. This makes failures easier to identify and keeps individual requests smaller, but each seam can slightly affect prosody. Multi-segment output is merged only when every response is compatible raw PCM with matching sample rate and channels. If the selected model returns another format or changes PCM metadata, generation stops with an explanation rather than producing a corrupt file. A failed run does not save partial segments for resume, so retrying may bill already completed segments again. Text and audio remain in page memory and are not written to persistent storage.
 
-OpenRouter's current model page for Gemini 3.8 Flash Lite TTS lists an 8K context window, but the speech endpoint does not define one universal character limit for every model. Word-to-token ratios, audio output limits, and voice support vary by model. Three thousand words may fit some models in one request, but confirm the model's current constraints; increase the character target only when appropriate. A 20-minute mono recording at 24 kHz/16-bit PCM is about 58 MB before browser playback memory, so low-memory phones may work better with shorter sections. Reference: <https://openrouter.ai/google/gemini-3.8-flash-lite-tts>.
+OpenRouter's current model page for Gemini 3.8 Flash Lite TTS lists an 8K-token context window; tokens are not characters, and this figure applies only to that model. The speech endpoint does not define one universal character limit for every model. Tokenization, audio output limits, and voice support vary, so neither 3,000 words nor a character count guarantees a request will fit. Confirm the selected model's current constraints; increase the character target only when appropriate. A 20-minute mono recording at 24 kHz/16-bit PCM is about 58 MB before browser playback memory, so low-memory phones may work better with shorter sections. Reference: <https://openrouter.ai/google/gemini-3.8-flash-lite-tts>.
 
 ## BYOK security notes
 
