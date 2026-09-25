@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="color-scheme" content="dark" />
+  <title>OpenRouter TTS</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self' data: blob:;
+      connect-src https://openrouter.ai;
+      media-src blob:;
+      img-src 'self' data:;
+      style-src 'self';
+      script-src 'self';
+    "
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <main class="page">
+    <header class="brand">
+      <div class="logo" aria-hidden="true">T</div>
+      <div class="brand-copy">
+        <h1>Simple TTS</h1>
+        <p>OpenRouter BYOK · Gemini 3.8 Flash Lite TTS</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <section class="section">
+        <div class="section-title">
+          <h2>Connection</h2>
+          <span class="chip">BYOK · local only</span>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="apiKey">OpenRouter API Key</label>
+            <div class="key-wrap">
+              <input
+                id="apiKey"
+                class="control"
+                type="password"
+                inputmode="text"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="sk-or-v1-..."
+                aria-describedby="keyHint"
+              />
+              <button id="toggleKey" class="icon-button" type="button" aria-label="Show API key">
+                Show
+              </button>
+            </div>
+            <div id="keyHint" class="hint">
+              The key is kept only in this page's memory. It is not saved to localStorage.
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="voice">Voice</label>
+            <select id="voice" class="control"></select>
+            <div class="hint">30 prebuilt voices supported by Gemini 3.8 Flash Lite TTS.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h2>Speech</h2>
+          <span class="chip">PCM → WAV</span>
+        </div>
+
+        <div class="field">
+          <label for="text">Text to speak</label>
+          <textarea
+            id="text"
+            class="textarea"
+            placeholder="Type something to generate speech..."
+          >Hello! This is Gemini 3.8 Flash Lite TTS through OpenRouter.</textarea>
+
+          <div class="textarea-meta">
+            <span class="hint">Tip: Ctrl/Cmd + Enter to generate.</span>
+            <span id="counter" class="counter">0 characters</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="clearBtn" class="button secondary" type="button">Clear</button>
+          <button id="generateBtn" class="button primary" type="button">
+            Generate Speech
+          </button>
+        </div>
+
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </section>
+
+      <section id="result" class="section result">
+        <div class="section-title">
+          <h2>Audio</h2>
+          <span id="resultBadge" class="chip">Ready</span>
+        </div>
+
+        <audio id="audio" controls preload="metadata"></audio>
+
+        <div class="result-meta">
+          <div class="meta-copy">
+            <div><strong>Voice:</strong> <span id="resultVoice">—</span></div>
+            <div><strong>File:</strong> <span id="resultFile">—</span></div>
+            <div><strong>Generation ID:</strong> <span id="generationId">—</span></div>
+          </div>
+
+          <a id="download" class="download" href="#" download>Download Audio</a>
+        </div>
+      </section>
+    </div>
+
+    <p class="footer-note">
+      Your OpenRouter key is sent only to OpenRouter when you generate speech.
+      This app requests PCM and converts it locally to a browser-friendly WAV file.
+      Do not hard-code a private API key into a public GitHub Pages deployment.
+    </p>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
