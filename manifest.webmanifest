@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "Simple TTS — OpenRouter BYOK",
+  "short_name": "Simple TTS",
+  "description": "Generate speech with Gemini 3.8 Flash Lite TTS using your own OpenRouter API key.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#070b14",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "icons/app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/app-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -3,19 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1020" />
+  <meta name="theme-color" content="#070b14" />
   <meta name="color-scheme" content="dark" />
-  <title>OpenRouter TTS</title>
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Simple TTS" />
+  <title>Simple TTS — OpenRouter BYOK</title>
+  <meta name="description" content="Generate speech with an OpenRouter-compatible text-to-speech model using your own API key." />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <meta
     http-equiv="Content-Security-Policy"
     content="
       default-src 'self' data: blob:;
-      connect-src https://openrouter.ai;
+      connect-src 'self' https://openrouter.ai;
       media-src blob:;
       img-src 'self' data:;
       style-src 'self';
       script-src 'self';
+      worker-src 'self';
+      manifest-src 'self';
     "
   />
 
@@ -28,18 +36,54 @@
       <div class="logo" aria-hidden="true">T</div>
       <div class="brand-copy">
         <h1>Simple TTS</h1>
-        <p>OpenRouter BYOK · Gemini 3.8 Flash Lite TTS</p>
+        <p>OpenRouter BYOK · choose your TTS model</p>
       </div>
     </header>
+
+    <div id="offlineNotice" class="app-notice offline-notice" role="status" aria-live="polite" hidden>
+      You are offline. The app is available, but speech generation needs an internet connection.
+    </div>
+
+    <div id="pwaStatusNotice" class="app-notice pwa-status-notice" role="status" aria-live="polite" hidden></div>
+
+    <div id="updateNotice" class="app-notice update-notice" role="region" aria-label="App update" aria-live="polite" hidden>
+      <div>
+        <strong>Update available</strong>
+        <span>A newer version is ready. Updating reloads the app; unsaved inputs will be lost.</span>
+      </div>
+      <button id="updateButton" class="button secondary" type="button">Update now</button>
+    </div>
+
+    <div id="installNotice" class="app-notice install-notice" role="region" aria-label="Install app" aria-live="polite" hidden>
+      <span>Install Simple TTS for a standalone app experience.</span>
+      <button id="installButton" class="button secondary" type="button">Install app</button>
+    </div>
 
     <div class="card">
       <section class="section">
         <div class="section-title">
           <h2>Connection</h2>
-          <span class="chip">BYOK · local only</span>
+          <span class="chip">BYOK · client-side</span>
         </div>
 
         <div class="grid">
+          <div class="field field-full-width">
+            <label for="model">OpenRouter TTS model ID</label>
+            <input
+              id="model"
+              class="control"
+              type="text"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="provider/model-name"
+              aria-describedby="modelHint"
+            />
+            <div id="modelHint" class="hint">
+              Use a model supported by OpenRouter's speech endpoint and PCM output. The model's voice requirements may vary.
+            </div>
+          </div>
+
           <div class="field">
             <label for="apiKey">OpenRouter API Key</label>
             <div class="key-wrap">
@@ -58,14 +102,51 @@
               </button>
             </div>
             <div id="keyHint" class="hint">
-              The key is kept only in this page's memory. It is not saved to localStorage.
+              The key is sent to OpenRouter only when generating speech.
+            </div>
+            <div class="remember-row">
+              <input id="rememberSettings" type="checkbox" />
+              <label for="rememberSettings">Remember settings on this device, including the API key</label>
+            </div>
+            <div class="settings-actions">
+              <button id="forgetSettings" class="button secondary" type="button" disabled>Forget saved settings</button>
+              <span id="settingsStatus" class="hint" role="status" aria-live="polite"></span>
+            </div>
+            <div class="hint storage-warning">
+              IndexedDB is not encrypted. Forgetting deletes this local copy, not the OpenRouter key. Avoid shared devices.
             </div>
           </div>
 
           <div class="field">
-            <label for="voice">Voice</label>
-            <select id="voice" class="control"></select>
-            <div class="hint">30 prebuilt voices supported by Gemini 3.8 Flash Lite TTS.</div>
+            <label for="voice">Voice (if required by your model)</label>
+            <input
+              id="voice"
+              class="control"
+              type="text"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="Model-specific voice name"
+            />
+            <div class="hint">Leave blank only if the selected model uses a default voice.</div>
+          </div>
+
+          <div class="field field-full-width">
+            <label for="chunkSize">Maximum characters per request</label>
+            <input
+              id="chunkSize"
+              class="control chunk-size-control"
+              type="number"
+              min="1000"
+              max="8000"
+              step="500"
+              value="4000"
+              inputmode="numeric"
+              aria-describedby="chunkSizeHint"
+            />
+            <div id="chunkSizeHint" class="hint">
+              Longer text is split at paragraph or sentence boundaries and synthesized sequentially. Each segment is a separate request; context is not carried across segments. This is a character target, not a token limit.
+            </div>
           </div>
         </div>
       </section>
@@ -82,11 +163,11 @@
             id="text"
             class="textarea"
             placeholder="Type something to generate speech..."
-          >Hello! This is Gemini 3.8 Flash Lite TTS through OpenRouter.</textarea>
+          >Hello! This is a text-to-speech test through OpenRouter.</textarea>
 
           <div class="textarea-meta">
             <span class="hint">Tip: Ctrl/Cmd + Enter to generate.</span>
-            <span id="counter" class="counter">0 characters</span>
+            <span id="counter" class="counter">0 words · 0 characters</span>
           </div>
         </div>
 
@@ -123,9 +204,22 @@
     <p class="footer-note">
       Your OpenRouter key is sent only to OpenRouter when you generate speech.
       This app requests PCM and converts it locally to a browser-friendly WAV file.
+      Saved settings remain on this device only when you opt in. The app shell works offline; speech generation requires an internet connection.
+      On iPhone or iPad, open this page in Safari and choose Share → Add to Home Screen.
       Do not hard-code a private API key into a public GitHub Pages deployment.
     </p>
   </main>
+
+  <div id="updateOverlay" class="update-overlay" role="status" aria-live="assertive" aria-atomic="true" hidden>
+    <div class="update-dialog">
+      <span class="spinner update-spinner" aria-hidden="true"></span>
+      <p id="updateProgress">Installing the update…</p>
+    </div>
+  </div>
+
+  <button id="scrollTopButton" class="scroll-top" type="button" aria-label="Scroll to top" hidden>
+    <span aria-hidden="true">↑</span>
+  </button>
 
   <script src="app.js" defer></script>
 </body>
