@@ -39,6 +39,12 @@ python -m http.server 8080
 
 Open <http://localhost:8080>, then enter an OpenRouter TTS model ID and API key. The key is used in memory unless you enable **Remember settings on this device**.
 
+## GitHub Pages deployment
+
+The `.github/workflows/deploy-pages.yml` workflow deploys the static app to GitHub Pages on pushes to `main`; it can also be run manually from the Actions tab. It stages only the app shell and install icons, not repository documentation or other files.
+
+Before the first deployment, open **Settings → Pages → Build and deployment** and select **GitHub Actions** as the publishing source. No API key or deployment secret is needed: BYOK credentials stay in the user's browser and are never part of the Pages artifact.
+
 ## OpenRouter request
 
 The app sends a browser-side `POST` request to:
