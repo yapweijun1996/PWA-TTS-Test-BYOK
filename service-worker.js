@@ -1,7 +1,7 @@
 "use strict";
 
 const CACHE_PREFIX = "simple-tts-shell-";
-const CACHE_VERSION = "v12";
+const CACHE_VERSION = "v13";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const APP_SHELL = [
   "./",

@@ -4,8 +4,8 @@ A small static text-to-speech app for user-selected TTS models through the OpenR
 
 ## Features
 
-- Bring your own OpenRouter API key (BYOK) and enter any model ID supported by OpenRouter's text-to-speech endpoint.
-- Accepts a model-specific voice name, or omits the voice when the model provides a default.
+- Bring your own OpenRouter API key (BYOK) and use the model-ID combobox suggestion for Google: Gemini 3.8 Flash Lite TTS, or enter any compatible model ID.
+- Choose from 30 prebuilt Gemini voice suggestions or enter a model-specific voice name; the voice is omitted when left blank for a model default.
 - Requests raw PCM audio and converts it in the browser to a WAV file.
 - Splits long text into sequential, sentence/paragraph-aware requests and merges compatible PCM responses into one WAV.
 - Plays and downloads generated audio.
@@ -21,9 +21,9 @@ The Web App Manifest defines the app identity, standalone display mode, scope, c
 
 The versioned Service Worker caches the static app shell only. It does not cache API requests, generated audio, or IndexedDB settings. When the browser reports offline, the cached interface remains available and the app says speech generation needs an internet connection. Browser connectivity indicators are advisory; generation still requires a working internet connection.
 
-When a newer Service Worker is waiting, the app asks it for its release identifier and labels the action **Update to v12** (using the HTML version label as a fallback). The current version stays active until the user chooses the update; then a loader is shown, the waiting worker activates, and the page reloads into the new version. The first install activates automatically because there is no existing app version to interrupt.
+When a newer Service Worker is waiting, the app asks it for its release identifier and labels the action **Update to v13** (using the HTML version label as a fallback). The current version stays active until the user chooses the update; then a loader is shown, the waiting worker activates, and the page reloads into the new version. The first install activates automatically because there is no existing app version to interrupt.
 
-For every release that changes the app shell, increment `CACHE_VERSION` in `service-worker.js` and synchronize `data-version`, the update heading, and the button label in `index.html`. The release identifier is also the visible update version (for example, `v12`); it is a cache/release identifier, not a semantic-versioning claim. This changes the worker bytes and cache name, precaches the new shell, and removes the previous app-shell cache after activation. Ensure the host does not indefinitely serve stale `index.html` or `service-worker.js` files. The service worker is registered relative to its own directory, so it can be hosted at a repository subpath.
+For every release that changes the app shell, increment `CACHE_VERSION` in `service-worker.js` and synchronize `data-version`, the update heading, and the button label in `index.html`. The release identifier is also the visible update version (for example, `v13`); it is a cache/release identifier, not a semantic-versioning claim. This changes the worker bytes and cache name, precaches the new shell, and removes the previous app-shell cache after activation. Ensure the host does not indefinitely serve stale `index.html` or `service-worker.js` files. The service worker is registered relative to its own directory, so it can be hosted at a repository subpath.
 
 On browsers that support `beforeinstallprompt`, the app exposes an install button. On iPhone or iPad, open the page in Safari and choose **Share → Add to Home Screen**. Settings are not retained between sessions unless the user explicitly enables IndexedDB saving.
 

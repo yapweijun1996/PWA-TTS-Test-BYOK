@@ -55,12 +55,12 @@
 
     <div id="pwaStatusNotice" class="app-notice pwa-status-notice" role="status" aria-live="polite" hidden></div>
 
-    <div id="updateNotice" class="app-notice update-notice" data-version="v12" role="region" aria-label="App update" aria-live="polite" hidden>
+    <div id="updateNotice" class="app-notice update-notice" data-version="v13" role="region" aria-label="App update" aria-live="polite" hidden>
       <div>
-        <strong id="updateTitle">Update available: v12</strong>
+        <strong id="updateTitle">Update available: v13</strong>
         <span>A newer version is ready. Updating reloads the app; unsaved inputs will be lost.</span>
       </div>
-      <button id="updateButton" class="button secondary" type="button">Update to v12</button>
+      <button id="updateButton" class="button secondary" type="button">Update to v13</button>
     </div>
 
     <div class="workspace-grid">
@@ -114,14 +114,18 @@
                 id="model"
                 class="control"
                 type="text"
+                list="modelOptions"
                 autocomplete="off"
                 autocapitalize="off"
                 spellcheck="false"
-                placeholder="provider/model-name"
+                placeholder="Choose a suggested model or enter a model ID"
                 aria-describedby="modelHint"
               />
+              <datalist id="modelOptions">
+                <option value="google/gemini-3.8-flash-lite-tts" label="Google: Gemini 3.8 Flash Lite TTS · Text to Speech"></option>
+              </datalist>
               <div id="modelHint" class="hint">
-                Must support OpenRouter's speech endpoint and PCM output.
+                Google: Gemini 3.8 Flash Lite TTS · Text to Speech. Select it or enter another compatible model ID; PCM output is required.
               </div>
             </div>
 
@@ -159,17 +163,53 @@
             </div>
 
             <div class="field">
-              <label for="voice">Voice (if required by your model)</label>
+              <label for="voice">Voice (model-specific, optional)</label>
               <input
                 id="voice"
                 class="control"
                 type="text"
+                list="voiceOptions"
                 autocomplete="off"
                 autocapitalize="off"
                 spellcheck="false"
-                placeholder="Model-specific voice name"
+                placeholder="Choose a prebuilt voice or enter a name"
+                aria-describedby="voiceHint"
               />
-              <div class="hint">Leave blank only if the selected model uses a default voice.</div>
+              <datalist id="voiceOptions">
+                <option value="Zephyr" label="Bright · 明亮"></option>
+                <option value="Puck" label="Upbeat · 活泼"></option>
+                <option value="Charon" label="Informative · 信息型"></option>
+                <option value="Kore" label="Firm · 坚定"></option>
+                <option value="Fenrir" label="Excitable · 兴奋"></option>
+                <option value="Leda" label="Youthful · 年轻"></option>
+                <option value="Orus" label="Firm · 坚定"></option>
+                <option value="Aoede" label="Breezy · 轻松"></option>
+                <option value="Callirrhoe" label="Easy-going · 随和"></option>
+                <option value="Autonoe" label="Bright · 明亮"></option>
+                <option value="Enceladus" label="Breathy · 气声"></option>
+                <option value="Iapetus" label="Clear · 清晰"></option>
+                <option value="Umbriel" label="Easy-going · 随和"></option>
+                <option value="Algieba" label="Smooth · 顺滑"></option>
+                <option value="Despina" label="Smooth · 顺滑"></option>
+                <option value="Erinome" label="Clear · 清晰"></option>
+                <option value="Algenib" label="Gravelly · 沙哑"></option>
+                <option value="Rasalgethi" label="Informative · 信息型"></option>
+                <option value="Laomedeia" label="Upbeat · 活泼"></option>
+                <option value="Achernar" label="Soft · 柔和"></option>
+                <option value="Alnilam" label="Firm · 坚定"></option>
+                <option value="Schedar" label="Even · 平稳"></option>
+                <option value="Gacrux" label="Mature · 成熟"></option>
+                <option value="Pulcherrima" label="Forward · 直接"></option>
+                <option value="Achird" label="Friendly · 友善"></option>
+                <option value="Zubenelgenubi" label="Casual · 随性"></option>
+                <option value="Vindemiatrix" label="Gentle · 温和"></option>
+                <option value="Sadachbia" label="Lively · 生动"></option>
+                <option value="Sadaltager" label="Knowledgeable · 知性"></option>
+                <option value="Sulafat" label="Warm · 温暖"></option>
+              </datalist>
+              <div id="voiceHint" class="hint">
+                These 30 prebuilt voices are Gemini-specific. For other models, enter a supported name or leave blank to use its default.
+              </div>
             </div>
 
             <details class="advanced-settings field-full-width">
