@@ -47,6 +47,7 @@
       let currentObjectUrl = null;
       let isGenerating = false;
       let updateInProgress = false;
+      let updateCheckInProgress = false;
       let updateTimeoutId = null;
       let serviceWorkerRegistration = null;
       let deferredInstallPrompt = null;
@@ -526,19 +527,27 @@
         });
       }
 
+      function resetUpdateCheckButton() {
+        const version = updateNoticeEl.dataset.version;
+        updateButtonEl.textContent = version ? `Check updates · ${version}` : "Check updates";
+        updateButtonEl.disabled = false;
+      }
+
       async function showAvailableUpdate(registration) {
         const waitingWorker = registration.waiting;
-        if (!waitingWorker || !navigator.serviceWorker.controller) return;
+        if (!waitingWorker || !navigator.serviceWorker.controller) return false;
 
         updateNoticeEl.hidden = false;
         const version = await requestWorkerVersion(waitingWorker);
-        if (registration.waiting !== waitingWorker || updateNoticeEl.hidden) return;
+        if (registration.waiting !== waitingWorker || updateNoticeEl.hidden) return false;
 
         const displayVersion = version || updateNoticeEl.dataset.version;
-        if (!displayVersion) return;
+        if (!displayVersion) return false;
 
         updateTitleEl.textContent = `Update available: ${displayVersion}`;
         updateButtonEl.textContent = `Update to ${displayVersion}`;
+        updateButtonEl.disabled = updateCheckInProgress;
+        return true;
       }
 
       function checkForWaitingUpdate(registration) {
@@ -553,6 +562,7 @@
           const handleWorkerStateChange = () => {
             if (installingWorker.state === "redundant") {
               updateNoticeEl.hidden = true;
+              resetUpdateCheckButton();
               showPwaStatus(
                 navigator.serviceWorker.controller
                   ? "The new app version could not be installed. The current version remains available."
@@ -606,13 +616,54 @@
         }
       }
 
+      async function checkForAvailableUpdate() {
+        if (updateInProgress || updateCheckInProgress) return;
+
+        const registration = serviceWorkerRegistration;
+        if (!registration) {
+          showPwaStatus("Update checking is unavailable until the Service Worker is ready.");
+          return;
+        }
+
+        if (registration.waiting) {
+          applyAvailableUpdate();
+          return;
+        }
+
+        updateCheckInProgress = true;
+        updateButtonEl.disabled = true;
+        updateButtonEl.textContent = `Checking · ${updateNoticeEl.dataset.version}`;
+        updateNoticeEl.hidden = true;
+        showPwaStatus("");
+
+        try {
+          await registration.update();
+          if (registration.waiting) {
+            await showAvailableUpdate(registration);
+            showPwaStatus("A new version is ready. Select the version button again to install it.");
+          } else {
+            showPwaStatus(`You're using ${updateNoticeEl.dataset.version}; no update is available.`);
+          }
+        } catch {
+          showPwaStatus("Could not check for updates. Check your connection and try again.");
+        } finally {
+          updateCheckInProgress = false;
+          if (registration.waiting) {
+            updateButtonEl.disabled = false;
+          } else {
+            resetUpdateCheckButton();
+          }
+        }
+      }
+
       function applyAvailableUpdate() {
         if (updateInProgress) return;
 
         const waitingWorker = serviceWorkerRegistration?.waiting;
         if (!waitingWorker) {
           updateNoticeEl.hidden = true;
-          showPwaStatus("The update is no longer waiting. Reload the app to check again.");
+          resetUpdateCheckButton();
+          showPwaStatus("No update is waiting. Select Check updates to check again.");
           return;
         }
 
@@ -846,7 +897,7 @@
         setInstallNoticeVisible(false);
       });
 
-      updateButtonEl.addEventListener("click", applyAvailableUpdate);
+      updateButtonEl.addEventListener("click", checkForAvailableUpdate);
       installButtonEl.addEventListener("click", promptInstall);
       forgetSettingsEl.addEventListener("click", () => {
         settingsControlsTouched = true;

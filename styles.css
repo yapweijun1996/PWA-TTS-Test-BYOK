@@ -101,7 +101,12 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
+      gap: 8px;
       min-width: 0;
+    }
+
+    .update-button {
+      white-space: nowrap;
     }
 
     .app-notice {
@@ -150,7 +155,6 @@
       color: var(--muted);
     }
 
-    .update-notice .button,
     .install-notice .button {
       flex: 0 0 auto;
     }

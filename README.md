@@ -13,7 +13,7 @@ A small static text-to-speech app for user-selected TTS models through the OpenR
 - Uses a restrictive same-origin CSP for the static assets.
 - Installs as a standalone PWA with home-screen icons.
 - Caches only the application shell for offline launch; OpenRouter generation remains online-only.
-- Shows a user-controlled update button labeled with the waiting app version and a loader before activating a waiting Service Worker.
+- Keeps a versioned update-check button visible in the header; it becomes an update action when a new Service Worker is waiting.
 
 ## PWA behavior
 
@@ -21,9 +21,9 @@ The Web App Manifest defines the app identity, standalone display mode, scope, c
 
 The versioned Service Worker caches the static app shell only. It does not cache API requests, generated audio, or IndexedDB settings. When the browser reports offline, the cached interface remains available and the app says speech generation needs an internet connection. Browser connectivity indicators are advisory; generation still requires a working internet connection.
 
-When a newer Service Worker is waiting, the app asks it for its release identifier and labels the action **Update to v13** (using the HTML version label as a fallback). The current version stays active until the user chooses the update; then a loader is shown, the waiting worker activates, and the page reloads into the new version. The first install activates automatically because there is no existing app version to interrupt.
+The header always shows **Check updates · v14**. Selecting it checks for a newer Service Worker. If one is waiting, the app asks it for its release identifier, changes the button to **Update to v15**, and shows an update notice. The current version stays active until the user selects the update action; then a loader is shown, the waiting worker activates, and the page reloads. The first install activates automatically because there is no existing app version to interrupt.
 
-For every release that changes the app shell, increment `CACHE_VERSION` in `service-worker.js` and synchronize `data-version`, the update heading, and the button label in `index.html`. The release identifier is also the visible update version (for example, `v13`); it is a cache/release identifier, not a semantic-versioning claim. This changes the worker bytes and cache name, precaches the new shell, and removes the previous app-shell cache after activation. Ensure the host does not indefinitely serve stale `index.html` or `service-worker.js` files. The service worker is registered relative to its own directory, so it can be hosted at a repository subpath.
+For every release that changes the app shell, increment `CACHE_VERSION` in `service-worker.js` and synchronize `data-version`, the update heading, and the initial **Check updates · vN** button label in `index.html`. The release identifier is a cache/release identifier, not a semantic-versioning claim. This changes the worker bytes and cache name, precaches the new shell, and removes the previous app-shell cache after activation. Ensure the host does not indefinitely serve stale `index.html` or `service-worker.js` files. The service worker is registered relative to its own directory, so it can be hosted at a repository subpath.
 
 On browsers that support `beforeinstallprompt`, the app exposes an install button. On iPhone or iPad, open the page in Safari and choose **Share → Add to Home Screen**. Settings are not retained between sessions unless the user explicitly enables IndexedDB saving.
 
